@@ -1,16 +1,14 @@
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-import { Notify } from 'notiflix/build/notiflix-notify-aio';
-const axios = require('axios').default;
+import axios from 'axios';
 const searchForm = document.querySelector('.search-form');
 const galleryEl = document.querySelector('.gallery');
 const loadMoreBtn = document.querySelector('.load-more');
 loadMoreBtn.style.display = 'none';
-const lightbox = new SimpleLightbox('.gallery a', {
-  captionDelay: 250,
-  captionsData: 'alt',
-});
+let lightbox = new SimpleLightbox('.gallery a');
 let page = 1;
+let perPage = 40;
 let searchCounter = 0;
 loadMoreBtn.addEventListener('click', onLoadMoreBtnClick);
 galleryEl.addEventListener('click', onGalleryPictureClick);
@@ -60,7 +58,7 @@ async function searchPictures(text) {
   }
   try {
     const searchResult = await axios.get(
-      `${URl}&q=${text}&image_type=photo&orientation=horizontal&safesearch=true&page=${page}&per_page=40`
+      `${URl}&q=${text}&image_type=photo&orientation=horizontal&safesearch=true&page=${page}&per_page=${perPage}`
     );
     return searchResult;
   } catch (error) {
@@ -79,23 +77,30 @@ function addMarkup(pics) {
         views,
         comments,
         downloads,
-      }) => `<a class="gallery__item" href="${largeImageURL}"><div class="photo-card">
-<img class="gallery__image" src="${webformatURL}" alt="${tags}" width="300px" loading="lazy" />
-<div class="info">
-<p class="info-item">
-<b>Likes ${likes}</b>
-</p>
-<p class="info-item">
-<b>Views ${views}</b>
-</p>
-<p class="info-item">
-<b>Comments ${comments}</b>
-</p>
-<p class="info-item">
-<b>Downloads ${downloads}</b>
-</p>
-</div>
-</div></a>`
+      }) => `<div class="photo-card"><a href="${largeImageURL}"
+      >
+        <img
+          class="gallery__image"
+          src="${webformatURL}"
+          alt="${tags}"
+          width="300"
+          loading="lazy"
+        />
+        <div class="info">
+          <p class="info-item">
+            <b>Likes ${likes}</b>
+          </p>
+          <p class="info-item">
+            <b>Views ${views}</b>
+          </p>
+          <p class="info-item">
+            <b>Comments ${comments}</b>
+          </p>
+          <p class="info-item">
+            <b>Downloads ${downloads}</b>
+          </p>
+        </div></a>
+      </div>`
     )
     .join('');
 
@@ -105,5 +110,12 @@ function addMarkup(pics) {
 function onLoadMoreBtnClick(e) {
   page += 1;
   let searchQuery = searchForm.searchQuery.value.trim();
-  searchPictures(searchQuery).then(pictures => addMarkup(pictures));
+  searchPictures(searchQuery).then(pics => {
+    let totalHits = pics.data.totalHits;
+    if (page > 1 && totalHits - page * perPage < 40) {
+      loadMoreBtn.style.display = 'none';
+      Notify.info("We're sorry, but you've reached the end of search results.");
+    }
+    addMarkup(pics);
+  });
 }
