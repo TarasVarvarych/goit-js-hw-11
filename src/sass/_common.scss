@@ -6,6 +6,8 @@ img {
   display: block;
   max-width: 100%;
   height: auto;
+  width: 350px;
+  height: 250px;
 }
 
 p {
@@ -89,8 +91,8 @@ a {
 .photo-card {
   display: flex;
   flex-direction: column;
-  flex-basis: calc(100% / 5);
-  height: 300px;
+  // flex-basis: calc(100% / 5);
+  // height: 300px;
   border-bottom: 2px solid rgba(0, 0, 0, 0.1);
   transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
   &:hover {
