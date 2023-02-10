@@ -6,15 +6,10 @@ const searchForm = document.querySelector('.search-form');
 const galleryEl = document.querySelector('.gallery');
 const loadMoreBtn = document.querySelector('.load-more');
 loadMoreBtn.style.display = 'none';
-let lightbox = new SimpleLightbox('.gallery a');
 let page = 1;
 let perPage = 40;
 let searchCounter = 0;
 loadMoreBtn.addEventListener('click', onLoadMoreBtnClick);
-galleryEl.addEventListener('click', onGalleryPictureClick);
-function onGalleryPictureClick(e) {
-  e.preventDefault();
-}
 const URl = 'https://pixabay.com/api/?key=33482948-b5c83a7dc2a9b66355ab60109';
 searchForm.addEventListener('submit', onSearchFormSubmit);
 
@@ -49,7 +44,7 @@ function onSearchFormSubmit(e) {
     }
     addMarkup(pics);
   });
-  lightbox.refresh();
+  // lightbox.refresh();
 }
 
 async function searchPictures(text) {
@@ -66,8 +61,8 @@ async function searchPictures(text) {
   }
 }
 
-function addMarkup(pics) {
-  const markup = pics.data.hits
+async function addMarkup(pics) {
+  const markup = await pics.data.hits
     .map(
       ({
         largeImageURL,
@@ -77,34 +72,27 @@ function addMarkup(pics) {
         views,
         comments,
         downloads,
-      }) => `<div class="photo-card"><a href="${largeImageURL}"
-      >
-        <img
-          class="gallery__image"
-          src="${webformatURL}"
-          alt="${tags}"
-          width="300"
-          loading="lazy"
-        />
+      }) => ` <div class="photo-card">
+      <a href="${largeImageURL}">
+          <img
+            class="gallery__image"
+            src="${webformatURL}"
+            alt="${tags}"
+            loading="lazy"
+          />
         <div class="info">
-          <p class="info-item">
-            <b>Likes ${likes}</b>
-          </p>
-          <p class="info-item">
-            <b>Views ${views}</b>
-          </p>
-          <p class="info-item">
-            <b>Comments ${comments}</b>
-          </p>
-          <p class="info-item">
-            <b>Downloads ${downloads}</b>
-          </p>
-        </div></a>
-      </div>`
+          <p class="info-item"><b>Likes</b> <span>${likes}</span></p>
+          <p class="info-item"><b>Views</b> <span>${views}</span></p>
+          <p class="info-item"><b>Comments </b><span>${comments}</span></p>
+          <p class="info-item"><b>Downloads </b><span>${downloads}</span></p>
+        </div></a
+      >
+    </div>`
     )
     .join('');
 
   galleryEl.insertAdjacentHTML('beforeend', markup);
+  new SimpleLightbox('.gallery a');
 }
 
 function onLoadMoreBtnClick(e) {
@@ -118,4 +106,9 @@ function onLoadMoreBtnClick(e) {
     }
     addMarkup(pics);
   });
+}
+
+galleryEl.addEventListener('click', onGalleryPictureClick);
+function onGalleryPictureClick(e) {
+  e.preventDefault();
 }
