@@ -4,6 +4,7 @@ import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import axios from 'axios';
 import addMarkup from './addMarkup';
+import searchPictures from './searchPictures';
 // QUERY SELECTORS
 const searchForm = document.querySelector('.search-form');
 const galleryEl = document.querySelector('.gallery');
@@ -12,7 +13,7 @@ const loadMoreBtn = document.querySelector('.load-more');
 let page = 1;
 let perPage = 40;
 let searchCounter = 0;
-const URl = 'https://pixabay.com/api/?key=33482948-b5c83a7dc2a9b66355ab60109';
+// const URl = 'https://pixabay.com/api/?key=33482948-b5c83a7dc2a9b66355ab60109';
 const ligthbox = new SimpleLightbox('.gallery a');
 // EVENT LISTENERS
 loadMoreBtn.addEventListener('click', onLoadMoreBtnClick);
@@ -39,7 +40,7 @@ async function onSearchFormSubmit(e) {
     page = 1;
   }
   try {
-    const pics = await searchPictures(searchQuery);
+    const pics = await searchPictures(searchQuery, page);
     let totalHits = pics.data.totalHits;
     if (totalHits === 0) {
       hideLoadBtn();
@@ -63,28 +64,14 @@ async function onSearchFormSubmit(e) {
   ligthbox.refresh();
 }
 
-async function searchPictures(text) {
-  if (text === '') {
-    return;
-  }
-  try {
-    const searchResult = await axios.get(
-      `${URl}&q=${text}&image_type=photo&orientation=horizontal&safesearch=true&page=${page}&per_page=${perPage}`
-    );
-    return searchResult;
-  } catch (error) {
-    console.log(error);
-  }
-}
-
 async function onLoadMoreBtnClick(e) {
   page += 1;
   let searchQuery = searchForm.searchQuery.value.trim();
 
   try {
-    const pics = await searchPictures(searchQuery);
+    const pics = await searchPictures(searchQuery, page);
     let totalHits = pics.data.totalHits;
-    if (page > 1 && totalHits - page * perPage < 40) {
+    if (Math.ceil(totalHits / perPage < page)) {
       hideLoadBtn();
       Notify.info("We're sorry, but you've reached the end of search results.");
     }
